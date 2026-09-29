@@ -52,9 +52,9 @@ dev = [
 ctp = "ctp.cli:main"
 
 [project.urls]
-Documentation = "https://github.com/OWNER/ctp-training#readme"
-Source = "https://github.com/OWNER/ctp-training"
-Changelog = "https://github.com/OWNER/ctp-training/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/Riskingfire/ctp-training#readme"
+Source = "https://github.com/Riskingfire/ctp-training"
+Changelog = "https://github.com/Riskingfire/ctp-training/blob/main/CHANGELOG.md"
 
 [tool.setuptools.dynamic]
 version = { attr = "ctp._version.__version__" }
