@@ -1,4 +1,4 @@
-"""Train with transformers.Trainer on a CTP-backed streaming dataset.
+"""Train with transformers.Trainer on a CTProtocol-backed streaming dataset.
 
 pip install "ctp-training[hf]" transformers torch
 """
@@ -11,13 +11,13 @@ from transformers import (
     TrainingArguments,
 )
 
-from ctp import CTPDataset, to_hf_iterable
+from ctprotocol import CTProtocolDataset, to_hf_iterable
 
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained("gpt2")
 
-stream = CTPDataset("https://example.com/train-{000..015}.jsonl.gz", shuffle_shards=True)
+stream = CTProtocolDataset("https://example.com/train-{000..015}.jsonl.gz", shuffle_shards=True)
 train = to_hf_iterable(stream).map(
     lambda ex: tokenizer(ex["text"], truncation=True, max_length=512), batched=True, remove_columns=["text"]
 )

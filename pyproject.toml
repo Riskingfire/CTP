@@ -49,7 +49,7 @@ dev = [
 ]
 
 [project.scripts]
-ctp = "ctp.cli:main"
+ctp = "ctprotocol.cli:main"
 
 [project.urls]
 Documentation = "https://github.com/Riskingfire/ctp-training#readme"
@@ -57,13 +57,13 @@ Source = "https://github.com/Riskingfire/ctp-training"
 Changelog = "https://github.com/Riskingfire/ctp-training/blob/main/CHANGELOG.md"
 
 [tool.setuptools.dynamic]
-version = { attr = "ctp._version.__version__" }
+version = { attr = "ctprotocol._version.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-ctp = ["py.typed"]
+ctprotocol = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -81,7 +81,7 @@ ignore = ["E501", "B904"]
 python_version = "3.10"
 strict = true
 warn_unused_ignores = true
-files = ["src/ctp"]
+files = ["src/ctprotocol"]
 
 [[tool.mypy.overrides]]
 module = ["torch.*", "datasets.*", "pyarrow.*", "zstandard.*"]

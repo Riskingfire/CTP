@@ -1,7 +1,7 @@
 import pytest
 
-from ctp import Plan, recommend, run_benchmark
-from ctp.benchmark import BenchmarkReport, CpuResult, DiskResult, GpuResult, NetworkResult, measure_network
+from ctprotocol import Plan, recommend, run_benchmark
+from ctprotocol.benchmark import BenchmarkReport, CpuResult, DiskResult, GpuResult, NetworkResult, measure_network
 
 from .conftest import jsonl_bytes
 

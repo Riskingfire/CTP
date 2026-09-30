@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from ctp.cli import main
+from ctprotocol.cli import main
 
 from .conftest import jsonl_bytes
 

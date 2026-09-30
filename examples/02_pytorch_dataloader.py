@@ -1,4 +1,4 @@
-"""Use CTP as a drop-in IterableDataset for a PyTorch DataLoader.
+"""Use CTProtocol as a drop-in IterableDataset for a PyTorch DataLoader.
 
 pip install "ctp-training[torch,parquet]" transformers
 """
@@ -6,20 +6,20 @@ pip install "ctp-training[torch,parquet]" transformers
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from ctp import CTPConfig
-from ctp.integrations.pytorch import CTPIterableDataset
+from ctprotocol import CTProtocolConfig
+from ctprotocol.integrations.pytorch import CTProtocolIterableDataset
 
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained("gpt2")
 
-dataset = CTPIterableDataset(
+dataset = CTProtocolIterableDataset(
     "hf://datasets/org/name/data/train-{00000..00031}-of-00032.parquet",
     columns=["text"],
     text_field="text",
     shuffle_shards=True,
     shuffle_buffer=20_000,
-    config=CTPConfig(ahead_seconds=60, max_cache_mb=2048),  # split across workers automatically
+    config=CTProtocolConfig(ahead_seconds=60, max_cache_mb=2048),  # split across workers automatically
 )
 
 

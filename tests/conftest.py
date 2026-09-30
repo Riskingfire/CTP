@@ -137,9 +137,9 @@ def server() -> Iterator[Server]:
 @pytest.fixture
 def fast_config(tmp_path):  # type: ignore[no-untyped-def]
     """Config with tiny chunks, no backoff waits and an isolated cache dir."""
-    from ctp import CTPConfig
+    from ctprotocol import CTProtocolConfig
 
-    def make(**overrides: object) -> CTPConfig:
+    def make(**overrides: object) -> CTProtocolConfig:
         base = {
             "cache_dir": str(tmp_path / "cache"),
             "chunk_size": 64 * 1024,
@@ -148,7 +148,7 @@ def fast_config(tmp_path):  # type: ignore[no-untyped-def]
             "storage": "memory",
         }
         base.update(overrides)
-        return CTPConfig(**base)  # type: ignore[arg-type]
+        return CTProtocolConfig(**base)  # type: ignore[arg-type]
 
     return make
 

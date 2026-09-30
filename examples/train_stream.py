@@ -1,8 +1,8 @@
-from ctp import CTPConfig, CTPStream, URLSource
+from ctprotocol import CTProtocolConfig, CTProtocolStream, URLSource
 
 url = "https://example.com/data.jsonl"
 
-config = CTPConfig(
+config = CTProtocolConfig(
     cache_dir=".ctp_cache",
     ahead_seconds=60,
     max_cache_mb=1024,
@@ -10,7 +10,7 @@ config = CTPConfig(
 )
 
 source = URLSource(url)
-stream = CTPStream(source, config)
+stream = CTProtocolStream(source, config)
 
 try:
     for chunk in stream.stream():

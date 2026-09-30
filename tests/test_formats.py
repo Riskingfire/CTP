@@ -5,9 +5,9 @@ import json
 
 import pytest
 
-from ctp import ConfigError, DecodeError
-from ctp.formats import Inflater, detect_format, make_decoder
-from ctp.stats import StreamStats
+from ctprotocol import ConfigError, DecodeError
+from ctprotocol.formats import Inflater, detect_format, make_decoder
+from ctprotocol.stats import StreamStats
 
 from .conftest import jsonl_bytes
 

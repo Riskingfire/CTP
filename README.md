@@ -5,9 +5,9 @@ Hugging Face repo or local files through a small, bounded, self-cleaning buffer 
 roughly *one minute ahead* of your training loop, then deletes everything it wrote.
 
 ```python
-from ctp import CTPDataset
+from ctprotocol import CTProtocolDataset
 
-dataset = CTPDataset(
+dataset = CTProtocolDataset(
     "https://example.com/train-{000..127}.jsonl.gz",
     text_field="text",
     shuffle_shards=True,
@@ -57,16 +57,16 @@ override it with `format="jsonl" | "lines" | "parquet" | "raw"`.
 
 ```python
 from torch.utils.data import DataLoader
-from ctp import CTPConfig
-from ctp.integrations.pytorch import CTPIterableDataset
+from ctprotocol import CTProtocolConfig
+from ctprotocol.integrations.pytorch import CTProtocolIterableDataset
 
-ds = CTPIterableDataset(
+ds = CTProtocolIterableDataset(
     "hf://datasets/org/name/data/train-{00000..00031}.parquet",
     columns=["text"],
     text_field="text",
     shuffle_shards=True,
     shuffle_buffer=20_000,
-    config=CTPConfig(max_cache_mb=2048),
+    config=CTProtocolConfig(max_cache_mb=2048),
 )
 loader = DataLoader(ds, batch_size=32, num_workers=4)
 
@@ -82,9 +82,9 @@ is divided between local workers so one process never exceeds `max_cache_mb`.
 ### Hugging Face
 
 ```python
-from ctp import CTPDataset, to_hf_iterable
+from ctprotocol import CTProtocolDataset, to_hf_iterable
 
-train = to_hf_iterable(CTPDataset("https://host/train-{000..015}.jsonl.gz"))
+train = to_hf_iterable(CTProtocolDataset("https://host/train-{000..015}.jsonl.gz"))
 train = train.map(lambda ex: tokenizer(ex["text"]), batched=True)
 # Trainer(..., train_dataset=train, args=TrainingArguments(max_steps=...))   # max_steps is required
 ```
@@ -100,12 +100,12 @@ ctp benchmark --url https://host/train-000.jsonl.gz --consume-mb-s 25
 measures disk write/read/delete speed, CPU decode speed, GPU throughput and network throughput to your data host,
 then prints a recommended `storage`, `ahead_seconds` and `max_cache_mb`, with the reasoning and warnings
 (for example when your network is slower than your training loop, which no amount of prefetching can fix).
-Programmatically: `ctp.run_benchmark(...)` -> `ctp.recommend(report, consume_mb_s=...)` -> `plan.to_config()`.
+Programmatically: `ctprotocol.run_benchmark(...)` -> `ctprotocol.recommend(report, consume_mb_s=...)` -> `plan.to_config()`.
 
 > CTP cannot benchmark *your model*. Instead it measures your loop's real consumption rate at runtime
 > (`dataset.stats.demand_bytes_per_s`) and adapts the lookahead continuously.
 
-| `CTPConfig` field | Default | Meaning |
+| `CTProtocolConfig` field | Default | Meaning |
 |---|---|---|
 | `storage` | `"auto"` | `"memory"`, `"disk"`, or `"auto"` (memory if the buffer fits in 25% of free RAM) |
 | `ahead_seconds` | `60` | target lookahead = `ahead_seconds x` measured consumption rate |
@@ -117,7 +117,7 @@ Programmatically: `ctp.run_benchmark(...)` -> `ctp.recommend(report, consume_mb_
 | `headers` | `{}` | extra HTTP headers, e.g. auth |
 | `on_error` | `"raise"` | `"skip"` malformed records and count them in `stats.records_skipped` |
 
-`CTPConfig.from_env()` reads `CTP_CACHE_DIR`, `CTP_STORAGE`, `CTP_AHEAD_SECONDS`, `CTP_MAX_CACHE_MB`.
+`CTProtocolConfig.from_env()` reads `CTP_CACHE_DIR`, `CTP_STORAGE`, `CTP_AHEAD_SECONDS`, `CTP_MAX_CACHE_MB`.
 
 ### Observability
 
@@ -177,7 +177,7 @@ a problem for you, renaming the import package is a mechanical change (`src/ctp`
 
 ## Upgrading from 0.1
 
-`CTPStream.stream()`, `cleanup()`, `URLSource`, `FileSource`, `benchmark_system()`, `jsonl_stream()` and `text_stream()` keep
+`CTProtocolStream.stream()`, `cleanup()`, `URLSource`, `FileSource`, `benchmark_system()`, `jsonl_stream()` and `text_stream()` keep
 working. Breaking changes: `delete_consumed` is gone (consumed data is always deleted), CTP now only deletes its own
 session directory rather than every file in `cache_dir`, and the default cache location moved to the system temp dir.
 See [CHANGELOG.md](CHANGELOG.md).

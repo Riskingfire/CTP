@@ -1,7 +1,7 @@
 import pytest
 
-from ctp import ConfigError, FileSource, HTTPSource, SourceError, resolve_sources
-from ctp.sources import expand_braces, hf_url, open_source
+from ctprotocol import ConfigError, FileSource, HTTPSource, SourceError, resolve_sources
+from ctprotocol.sources import expand_braces, hf_url, open_source
 
 DATA = bytes(range(256)) * 4096  # 1 MiB, position-dependent so splices are detectable
 

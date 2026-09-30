@@ -10,8 +10,8 @@ import types
 
 import pytest
 
-import ctp
-from ctp import OptionalDependencyError
+import ctprotocol
+from ctprotocol import OptionalDependencyError
 
 from .conftest import jsonl_bytes
 
@@ -52,28 +52,28 @@ def fake_torch(monkeypatch):
         "torch.distributed": distributed,
     }.items():
         monkeypatch.setitem(sys.modules, name, mod)
-    monkeypatch.delitem(sys.modules, "ctp.integrations.pytorch", raising=False)
-    module = importlib.import_module("ctp.integrations.pytorch")
+    monkeypatch.delitem(sys.modules, "ctprotocol.integrations.pytorch", raising=False)
+    module = importlib.import_module("ctprotocol.integrations.pytorch")
     yield module, state
-    sys.modules.pop("ctp.integrations.pytorch", None)
+    sys.modules.pop("ctprotocol.integrations.pytorch", None)
 
 
 def test_lazy_attribute_raises_helpful_error_without_torch(monkeypatch):
     monkeypatch.setitem(sys.modules, "torch", None)  # makes `import torch` fail
-    monkeypatch.delitem(sys.modules, "ctp.integrations.pytorch", raising=False)
+    monkeypatch.delitem(sys.modules, "ctprotocol.integrations.pytorch", raising=False)
     with pytest.raises(OptionalDependencyError, match=r"ctp-training\[torch\]"):
-        ctp.CTPIterableDataset  # noqa: B018
+        ctprotocol.CTProtocolIterableDataset  # noqa: B018
 
 
 def test_unknown_attribute():
     with pytest.raises(AttributeError):
-        ctp.definitely_not_here  # noqa: B018
+        ctprotocol.definitely_not_here  # noqa: B018
 
 
 def test_adapter_splits_across_workers_and_ranks(fake_torch, tmp_path, fast_config):
     module, state = fake_torch
     paths = _write(tmp_path, n_shards=4)
-    ds = module.CTPIterableDataset(paths, config=fast_config(), text_field="text")
+    ds = module.CTProtocolIterableDataset(paths, config=fast_config(), text_field="text")
 
     seen = []
     for rank in range(2):
@@ -88,21 +88,21 @@ def test_adapter_splits_across_workers_and_ranks(fake_torch, tmp_path, fast_conf
 
 def test_adapter_single_process_reads_everything(fake_torch, tmp_path, fast_config):
     module, _ = fake_torch
-    ds = module.CTPIterableDataset(_write(tmp_path), config=fast_config(), text_field="text")
+    ds = module.CTProtocolIterableDataset(_write(tmp_path), config=fast_config(), text_field="text")
     assert len(list(ds)) == 40
 
 
 def test_adapter_divides_cache_budget_between_workers(fake_torch, tmp_path, fast_config, monkeypatch):
     module, state = fake_torch
     captured = {}
-    real = module.CTPDataset
+    real = module.CTProtocolDataset
 
     def spy(*args, **kwargs):
         captured["max_cache_mb"] = kwargs["config"].max_cache_mb
         return real(*args, **kwargs)
 
-    monkeypatch.setattr(module, "CTPDataset", spy)
-    ds = module.CTPIterableDataset(_write(tmp_path), config=fast_config(max_cache_mb=800))
+    monkeypatch.setattr(module, "CTProtocolDataset", spy)
+    ds = module.CTProtocolIterableDataset(_write(tmp_path), config=fast_config(max_cache_mb=800))
     state.worker = types.SimpleNamespace(id=0, num_workers=4)
     list(ds)
     assert captured["max_cache_mb"] == 200
@@ -110,13 +110,13 @@ def test_adapter_divides_cache_budget_between_workers(fake_torch, tmp_path, fast
 
 def test_adapter_validates_eagerly(fake_torch, tmp_path):
     module, _ = fake_torch
-    with pytest.raises(ctp.ConfigError):
-        module.CTPIterableDataset(str(tmp_path / "x.bin"))
+    with pytest.raises(ctprotocol.ConfigError):
+        module.CTProtocolIterableDataset(str(tmp_path / "x.bin"))
 
 
 def test_adapter_epoch_changes_shard_order(fake_torch, tmp_path, fast_config):
     module, _ = fake_torch
-    ds = module.CTPIterableDataset(
+    ds = module.CTProtocolIterableDataset(
         _write(tmp_path, 8, 2), config=fast_config(), shuffle_shards=True, text_field="text"
     )
     ds.set_epoch(0)
@@ -130,9 +130,9 @@ def test_real_torch_dataloader(tmp_path, fast_config):
     torch = pytest.importorskip("torch")
     from torch.utils.data import DataLoader
 
-    from ctp.integrations.pytorch import CTPIterableDataset
+    from ctprotocol.integrations.pytorch import CTProtocolIterableDataset
 
-    ds = CTPIterableDataset(_write(tmp_path), config=fast_config(), text_field="text")
+    ds = CTProtocolIterableDataset(_write(tmp_path), config=fast_config(), text_field="text")
     got = [t for batch in DataLoader(ds, batch_size=4, num_workers=2) for t in batch]
     assert len(got) == 40 and len(set(got)) == 40
     assert torch is not None
@@ -140,7 +140,7 @@ def test_real_torch_dataloader(tmp_path, fast_config):
 
 def test_real_hf_datasets(tmp_path, fast_config):
     pytest.importorskip("datasets")
-    from ctp import CTPDataset, to_hf_iterable
+    from ctprotocol import CTProtocolDataset, to_hf_iterable
 
-    hf = to_hf_iterable(CTPDataset(_write(tmp_path, 2, 5), config=fast_config()))
+    hf = to_hf_iterable(CTProtocolDataset(_write(tmp_path, 2, 5), config=fast_config()))
     assert len(list(hf)) == 10
